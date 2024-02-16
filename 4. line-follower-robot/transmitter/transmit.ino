@@ -1,10 +1,7 @@
-// // first use receiver_setup() function in setup block
-// // then use get_radio_values() function to get the radio values
-
 #include <SPI.h>
 #include <RF24.h>
 
-RF24 radio(10, 9);  // CE, CSN pins (customize these for your setup)
+RF24 radio(7, 8);  // CE, CSN pins (customize these for your setup)
 const byte address[6] = "00001";
 
 void ResetData() {
@@ -20,14 +17,14 @@ void receiver_setup() {
   ResetData();
 
   Serial.println("searching for radio signals");
-  int funny_count = 0;  // just for radio count
+  digitalWrite(s_led, 0);
+
+  // to test the radio hardware is connected or not
   while (!radio.begin()) {
     Serial.println(F("radio hardware is not responding!!"));
-    analogWrite(led, funny_count % 255);
-    funny_count++;
   }
-  analogWrite(led, 255);
   Serial.println("got the radio hardware");
+  digitalWrite(s_led, 1);
 
   // to initialize sending or recieving
   radio.openReadingPipe(1, address);  // for receiving
@@ -35,37 +32,30 @@ void receiver_setup() {
   radio.setPALevel(RF24_PA_LOW);
   radio.startListening();  // to start receiving data
   Serial.println("started listening");
-  delay(1000);
+  delay(2000);
 }
 
 void receive_data() {
   if (radio.available()) {
     radio.read(&data, sizeof(Signal));
 
-  // println(data.P);
-
-    // to change the pid values when radio available
-    Kp = data.P * 0.001;
-    Ki = data.I * 0.001;
-    Kd = data.D * 0.001;
-
-    Serial.println(String() + F("p_in: ") + data.P * 0.001 + F("\ti_in: ") + data.I * 0.001 + F("\td_in: ") + data.D * 0.001);
-  }
-  else{
-    Serial.println("not getting the values");
+    // to find the motor speeds
+    Serial.println(String() + F("error: ") + data.error + F("\tmotor1: ") + data.m1 + F("\tmotor2: ") + data.m2);
   }
 }
 
+// need a way to test wether the transmission is successful or not
 void transmit_data() {
   radio.stopListening();  // to get into transmission mode
 
-  data.error = error;
-  data.m1 = motor_speed1;
-  data.m2 = motor_speed2;
+  data.P = map(analogRead(P_pin), 0, 1023, 0, 255);
+  data.I = map(analogRead(I_pin), 0, 1023, 0, 255);
+  data.D = map(analogRead(D_pin), 0, 1023, 0, 255);
 
   radio.write(&data, sizeof(Signal));
 
-  // Serial.println(String() + F("error: ") + data.error + F("\tmotor1: ") + data.m1 + F("\tmotor2: ") + data.m2);
+  Serial.println(data.P);
+  // Serial.println(String() + F("p_in: ") + data.P * 0.001 + F("\ti_in: ") + data.I * 0.001 + F("\td_in: ") + data.D * 0.001);
 
   radio.startListening();  // to set the module into receiving mode
 }

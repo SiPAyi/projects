@@ -27,10 +27,10 @@ int switch2 = 8;
 void ResetData() {
   data.switch1 = 0;
   data.switch2 = 0;
-  data.throttle = 0;  
-  data.pitch = 0;     
-  data.roll = 0;      
-  data.yaw = 0;       
+  data.throttle = 0;
+  data.pitch = 0;
+  data.roll = 0;
+  data.yaw = 0;
 }
 
 int status_led = 6;
@@ -67,7 +67,7 @@ void setup() {
   radio.setPALevel(RF24_PA_LOW);
   disp_radio_check(1);
   Serial.println("radio connected");
- 
+
   radio.stopListening();  // put radio in TX mode
 
   digitalWrite(status_led, 1);
@@ -81,6 +81,6 @@ void setup() {
 }
 
 void loop() {
-  transmit_data();
-  // receive_data();  
+  // transmit_data();
+  receive_data();
 }

@@ -25,13 +25,18 @@ void find_coordinates() {
     Serial.println(F("Fail to request data from HUSKYLENS, recheck the connection!"));
   } else if (!huskylens.isLearned()) {
     Serial.println(F("Nothing learned, press learn button on HUSKYLENS to learn one!"));
-  } else if (!huskylens.available()) Serial.println(F("No block or arrow appears on the screen!"));
-  else {
+  } else if (!huskylens.available()) {
+    Serial.println(F("No block or arrow appears on the screen!"));
+    noBlock = 1;
+  } else {
+    noBlock = 0;
     HUSKYLENSResult result = huskylens.read();
     printResult(result);
 
     // Calculate the error:
+    // Im getting max error 128
     error = (int32_t)160 - (int32_t)xTarget;
+    line_length = pow(pow(xTarget - xOrigin, 2) + pow(yTarget - yOrigin, 2), 0.5);
   }
 }
 
