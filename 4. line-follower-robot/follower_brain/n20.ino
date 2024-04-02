@@ -10,8 +10,8 @@ void n20_setup() {
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
 
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
 
@@ -27,6 +27,17 @@ void n20_spin() {
 void n20_stop() {
   analogWrite(m1, 0);
   analogWrite(m2, 0);
+}
+
+void n20_rescue_mode() {
+  motor_speed1 = (int)(motor_values1[0] + motor_values1[1] + motor_values1[2] + motor_values1[3] + motor_values1[4])/5;
+  motor_speed2 = (int)(motor_values2[0] + motor_values2[1] + motor_values2[2] + motor_values2[3] + motor_values2[4])/5;
+
+  // motor speed saturating algo
+  motor_speed1 = minMax(motor_speed1);
+  motor_speed2 = minMax(motor_speed2);
+
+  n20_spin();
 }
 
 int minMax(int motor_speed) {

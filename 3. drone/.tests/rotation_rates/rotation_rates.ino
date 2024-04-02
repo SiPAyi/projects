@@ -25,21 +25,30 @@ void gyro_setup() {
   Wire.setClock(400000);
   Wire.begin();
 
-  pinMode(13, OUTPUT);
-  digitalWrite(13, HIGH);
-  delay(250);
+  delay(500);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
 
   Wire.beginTransmission(0x68);
   Wire.write(0x6B);
   Wire.write(0x00);
   Wire.endTransmission();
 
+  delay(1000);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
+
   // to get the bias offset values of the mpu6050
   // bias_values();
+  // i get this values from calibration for mpu1
+  rb = 1.41;
+  pb = -1.75;
+  yb = -0.79;
+
   // i got this values from calibration of new mpu
-  rb = 3.1091;
-  pb = 2.70;
-  yb = -0.46;
+  // rb = 3.1091;
+  // pb = 2.70;
+  // yb = -0.46;
   // axb = 0.00;
   // ayb = -0.01;
   // azb = 1.12;
@@ -59,7 +68,6 @@ void gyro_setup() {
   // g_roll = a_roll;
   // g_pitch = a_pitch;
 }
-
 
 
 void get_gyro_values(void) {
@@ -100,17 +108,14 @@ void get_gyro_values(void) {
 
   roll = (float)gyroX / 65.5;
   pitch = (float)gyroY / 65.5;
-  yaw = (float)gyroZ / 65.;
+  yaw = (float)gyroZ / 65.5;
 
   // accX = ((float)accelX / 4096) - axb;
   // accY = ((float)accelY / 4096) - ayb;
   // accZ = ((float)accelZ / 4096) - azb;
-  // Serial.print("\t");
-  // Serial.print(accX);
-  // Serial.print("\t");
-  // Serial.print(accY);
-  // Serial.print("\t");
-  // Serial.println(accZ);
+
+  // Serial.println(String() + F("\t ") + accX + F("\t ") + accY + F("\t ") + accZ + F("\t ") + roll + F("\t ") + pitch + F("\t ") + yaw);
+  // Serial.println(String() + F("\taccX: ") + accX + F("\taccY: ") + accY + F("\taccZ: ") + accZ + F("\troll: ") + roll + F("\tpitch: ") + pitch + F("\tyaw: ") + yaw);
 }
 
 void gyro_without_bias() {
@@ -119,6 +124,9 @@ void gyro_without_bias() {
   g_roll += (roll - rb) * (time_step * 5.5 / 1000.0);
   g_pitch += (pitch - pb) * (time_step * 5.5 / 1000.0);
   g_yaw += (yaw - yb) * (time_step * 5.5 / 1000.0);
+
+  Serial.println(String() + F("roll: ") + g_roll + F("\tpitch: ") + g_pitch + F("\tyaw: ") + g_yaw);
+
 
   // a_roll = atan2(accY, accZ) * 180.0 / PI;
   // a_pitch = atan2(-accX, sqrt(accY * accY + accZ * accZ)) * 180.0 / PI;
@@ -138,11 +146,14 @@ void gyro_without_bias() {
 void setup() {
   Serial.begin(9600);
   gyro_setup();
+  Serial.println(String() + F("\taccX: ") + F("\taccY: ") + F("\taccZ: ") + F("\troll: ") + F("\tpitch: ") + F("\tyaw: "));
 }
 
 void loop() {
   if (millis() - prev_time >= time_step) {
-    prev_time = millis();
+    // prev_time = millis();
+
+    // get_gyro_values();
 
     gyro_without_bias();
 
@@ -153,11 +164,11 @@ void loop() {
     // Serial.print("\t");
     // Serial.println(measures[2]);
 
-    Serial.print(g_roll);
-    Serial.print(", ");
-    Serial.print(g_pitch);
-    Serial.print(", ");
-    Serial.println(g_yaw);
+    // Serial.print(g_roll);
+    // Serial.print(", ");
+    // Serial.print(g_pitch);
+    // Serial.print(", ");
+    // Serial.println(g_yaw);
   }
 }
 
@@ -198,4 +209,5 @@ void bias_values() {
   Serial.println(ayb);
   Serial.print("\t");
   Serial.println(azb);
+  delay(5000);
 }

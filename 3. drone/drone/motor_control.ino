@@ -27,13 +27,13 @@ void applyMotorSpeeds() {
   motor_rb.write(motor_rb_throttle);
 
 
-  Serial.print(motor_lf_throttle);
-  Serial.print("\t");
-  Serial.print(motor_rf_throttle);
-  Serial.print("\t");
-  Serial.print(motor_lb_throttle);
-  Serial.print("\t");
-  Serial.println(motor_rb_throttle);
+  // Serial.print(motor_lf_throttle);
+  // Serial.print("\t");
+  // Serial.print(motor_rf_throttle);
+  // Serial.print("\t");
+  // Serial.print(motor_lb_throttle);
+  // Serial.print("\t");
+  // Serial.println(motor_rb_throttle);
 
   display_motor_speed();
 }

@@ -44,14 +44,14 @@ void receive_data() {
     radio_status_count = 0;
     radio.read(&data, sizeof(Signal));
 
-    instruction[THROTTLE] = 60 + map(data.pid, 0, 255, 0, 120);
+    // instruction[THROTTLE] = 60 + map(data.pid, 0, 255, 0, 120);
     // instruction[YAW] = (data.yaw - 125) / 10;
     // instruction[PITCH] = (data.pitch-125)/10;
     // instruction[ROLL] = (data.roll-125)/10;
 
     // below block is used when tuning
-    instruction[PITCH] = 0;
-    instruction[ROLL] = 0;
+    // instruction[PITCH] = 0;
+    // instruction[ROLL] = 0;
     // Kp[YAW] = (float)data.pid * 12 / 10;
 
     // disp_measures(); // for display info on lcd

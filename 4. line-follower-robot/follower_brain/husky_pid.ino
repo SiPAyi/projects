@@ -30,7 +30,21 @@ void calculatePID(int32_t error) {
   // motor_speed1 = 130 + 60 * (line_length / 190) - output;
   // motor_speed2 = 130 + 60 * (line_length / 190) + output;
 
-  // motor mixing algorithm
+  // motor speed saturating algo
   motor_speed1 = minMax(motor_speed1);
   motor_speed2 = minMax(motor_speed2);
+
+  // the below code is not used for now
+  // for rescue mode operation we need to average these values to get the motor speed
+  motor_values1[0] = motor_values1[1];
+  motor_values1[1] = motor_values1[2];
+  motor_values1[2] = motor_values1[3];
+  motor_values1[3] = motor_values1[4];
+  motor_values1[4] = motor_speed1;
+
+  motor_values2[0] = motor_values2[1];
+  motor_values2[1] = motor_values2[2];
+  motor_values2[2] = motor_values2[3];
+  motor_values2[3] = motor_values2[4];
+  motor_values2[4] = motor_speed2;
 }

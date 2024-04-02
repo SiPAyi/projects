@@ -81,6 +81,6 @@ void setup() {
 }
 
 void loop() {
-  // transmit_data();
-  receive_data();
+  transmit_data();
+  // receive_data();
 }

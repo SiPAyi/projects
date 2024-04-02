@@ -33,7 +33,7 @@ void calculateErrors() {
   Serial.print(errors[PITCH]);
   Serial.print("\t");
   Serial.print(errors[ROLL]);
-  Serial.print("\t");
+  Serial.println("\t");
 
   // disp_measures();
 }
@@ -69,10 +69,10 @@ void pidController() {
     pitch_pid = (errors[PITCH] * Kp[PITCH]) + (error_sum[PITCH] * Ki[PITCH]) + (delta_err[PITCH] * Kd[PITCH]);
     roll_pid = (errors[ROLL] * Kp[ROLL]) + (error_sum[ROLL] * Ki[ROLL]) + (delta_err[ROLL] * Kd[ROLL]);
 
-    Serial.print(pitch_pid);
-    Serial.print("\t");
-    Serial.print(roll_pid);
-    Serial.print("\t");
+    // Serial.print(pitch_pid);
+    // Serial.print("\t");
+    // Serial.print(roll_pid);
+    // Serial.print("\t");
 
     // Cauculate new target throttle for each motor
     motor_lf_throttle = instruction[THROTTLE] - roll_pid + pitch_pid + yaw_pid;
@@ -81,10 +81,10 @@ void pidController() {
     motor_rb_throttle = instruction[THROTTLE] + roll_pid - pitch_pid + yaw_pid;
 
     // Scale values to be within acceptable range for motors
-    motor_lf_throttle = minMax(motor_lf_throttle, 30, 60);
-    motor_rf_throttle = minMax(motor_rf_throttle, 30, 60);
-    motor_lb_throttle = minMax(motor_lb_throttle, 30, 60);
-    motor_rb_throttle = minMax(motor_rb_throttle, 30, 60);
+    motor_lf_throttle = minMax(motor_lf_throttle, 30, 100);
+    motor_rf_throttle = minMax(motor_rf_throttle, 30, 100);
+    motor_lb_throttle = minMax(motor_lb_throttle, 30, 100);
+    motor_rb_throttle = minMax(motor_rb_throttle, 30, 100);
 
     applyMotorSpeeds();
   }

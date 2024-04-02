@@ -23,10 +23,14 @@ int xOrigin = 0, yOrigin = 0, xTarget = 0, yTarget = 0;
 int32_t error;
 float line_length = 1.0;
 
+// motor previous values for rescue operation
+int motor_values1[5] = { 0, 0, 0, 0, 0 };
+int motor_values2[5] = { 0, 0, 0, 0, 0 };
+
 // PID constants
 double Kp = 1.4;        // Proportional term
 double Ki = 0.0000025;  // Integral term 0.0
-double Kd = 1.3;        // Derivative term 1.0
+double Kd = 1.1;        // Derivative term 1.0
 
 // some what failed because at 2nd turn it stoped may be kd>kp
 // double Kp = 1.3
@@ -62,14 +66,17 @@ void loop() {
   find_coordinates();
   calculatePID(error);
 
+  // // for test purpose only
   // motor_speed1 = 200;
   // motor_speed2 = 200;
-  // if (!noBlock) {
-  //   n20_spin();
-  // } else {
-  //   n20_stop();
-  // }
-  n20_spin();
+
+  if (!noBlock) {
+    n20_spin();
+  } else {
+    n20_rescue_mode();
+    // n20_stop();
+  }
+  // n20_spin();
 
   Serial.println(String() + F("error: ") + error + F("\t line_length: ") + line_length + F("\tmotor1: ") + motor_speed1 + F("\tmotor2: ") + motor_speed2);
   // transmit_data();

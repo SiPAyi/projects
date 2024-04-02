@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>PID Value Display</title>
+</head>
+
+<body>
+    <label for='pValue'>P Value:</label>
+    <input type='range' min='0' max='255' value='50' class='slider' id='pValue' onInput="sendData();">
+    <span id="p_value_text">50</span>
+    <br><br>
+    <label for='iValue'>I Value:</label>
+    <input type='range' min='0' max='255' value='50' class='slider' id='iValue' onInput="sendData();">
+<span id="i_value_text">50</span>
+    <br><br>
+    <label for='dValue'>D Value:</label>
+    <input type='range' min='0' max='255' value='50' class='slider' id='dValue'onInput="sendData();">
+<span id="d_value_text">50</span>
+
+    <script>
+        function sendData() {
+            const pValue = document.getElementById('pValue').value;
+            const iValue = document.getElementById('iValue').value;
+            const dValue = document.getElementById('dValue').value;
+
+	    const p_value_text = document.getElementById('p_value_text');
+	    const i_value_text = document.getElementById('i_value_text');
+	    const d_value_text = document.getElementById('d_value_text');
+	    p_value_text.innerText = pValue ;
+	    i_value_text.innerText = iValue ;
+	    d_value_text.innerText = dValue ;
+
+            const xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        // Response received successfully
+                        console.log("Server response: " + xhr.responseText);
+                        // Add your actions based on the response here
+                    } else {
+                        // Error handling
+                        console.error("Error: " + xhr.status);
+                    }
+                }
+            };
+
+            const url = 'http://192.168.133.251:80/?p=' + pValue + '&i=' + iValue + '&d=' + dValue;
+            xhr.open('GET', url, true);
+            xhr.send();
+        }
+    </script>
+</body>
+
+</html>

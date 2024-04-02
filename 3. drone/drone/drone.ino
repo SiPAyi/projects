@@ -15,13 +15,13 @@ struct Signal {
 Signal data;
 
 // pid controller
-float instruction[4] = { 0, 0, 0, 30 };           // [Yaw (cardinal direction), Pitch (x), Roll (y), Throttle]
+float instruction[4] = { 0, 0, 0, 30 };          // [Yaw (cardinal direction), Pitch (x), Roll (y), Throttle]
 float measures[4] = { 0, 0, 0, 0 };              // [Yaw (cardinal direction), Pitch (x), Roll (y)]
 int YAW = 0, PITCH = 1, ROLL = 2, THROTTLE = 3;  // for array indexing
 
 // pid values
-// int tp=3, ti=0.2, td=3; 
-int tp=1.3, ti=0.04, td=18.0; 
+// int tp=3, ti=0.2, td=3;
+int tp = 18, ti = 0.04, td = 18.0;
 
 float Kp[3] = { tp, tp, tp };  // P coefficients in that order : Yaw, Pitch, Roll
 float Ki[3] = { ti, ti, ti };  // I coefficients in that order : Yaw, Pitch, Roll
@@ -45,19 +45,20 @@ double prev_time = millis();
 
 // leds part
 int green1 = 2, red = 3, green2 = 4, count = 0;
-int radio_status_count = 0, led_status=0;
+int radio_status_count = 0, led_status = 0;
 
 void setup() {
   // analogReference(INTERNAL);   // for battery reading
   Serial.begin(9600);
   Serial.println("Fligh Started");
-  leds_setup(); // three leds i put on the drone will output the state it is in
+  leds_setup();  // three leds i put on the drone will output the state it is in
 
-  display_setup(); // need to implement it later or remove it
+  display_setup();  // need to implement it later or remove it
 
   kalman_gyro_setup();  // setuping gyro
+  // gyro_setup();
 
-  receiver_setup();
+  // receiver_setup2();
 
   setup_motors();
 
@@ -71,9 +72,10 @@ void loop() {
   if (millis() - prev_time >= time_step) {
     prev_time = millis();
 
-    receive_data(); // * it shows that radio is connected in the serial monitor
+    // receive_data(); // * it shows that radio is connected in the serial monitor
 
-    kalman_filtered_angles(); // ^ this means got the gyro values
+    kalman_filtered_angles();  // ^ this means got the gyro values
+    // gyro_without_bias();
 
     pidController();
 
