@@ -125,7 +125,7 @@ void gyro_without_bias() {
   g_pitch += (pitch - pb) * (time_step * 5.5 / 1000.0);
   g_yaw += (yaw - yb) * (time_step * 5.5 / 1000.0);
 
-  Serial.println(String() + F("roll: ") + g_roll + F("\tpitch: ") + g_pitch + F("\tyaw: ") + g_yaw);
+  Serial.println(String() + g_roll + F("\t") + g_pitch + F("\t") + g_yaw);
 
 
   // a_roll = atan2(accY, accZ) * 180.0 / PI;
@@ -144,14 +144,14 @@ void gyro_without_bias() {
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   gyro_setup();
   Serial.println(String() + F("\taccX: ") + F("\taccY: ") + F("\taccZ: ") + F("\troll: ") + F("\tpitch: ") + F("\tyaw: "));
 }
 
 void loop() {
   if (millis() - prev_time >= time_step) {
-    // prev_time = millis();
+    prev_time = millis();
 
     // get_gyro_values();
 
@@ -175,39 +175,45 @@ void loop() {
 void bias_values() {
   Serial.println("wait bro im calibrating mpu6050");
   int n = 2000;  // number of times need to sum
+  int roll_sum = 0;
+  int pitch_sum = 0;
+  int yaw_sum = 0;
+  int accX_sum = 0;
+  int accY_sum = 0;
+  int accZ_sum = 0;
 
   for (int i = 0; i < n; i++) {
     get_gyro_values();
-    rb += roll;
-    pb += pitch;
-    yb += yaw;
-    axb += accX;
-    ayb += accY;
-    azb += accZ;
+    roll_sum += roll;
+    pitch_sum += pitch;
+    yaw_sum += yaw;
+    accX_sum += accX;
+    accY_sum += accY;
+    accZ_sum += accZ;
     Serial.print(".");
   }
   n = (float)n;
-  rb /= n;
-  pb /= n;
-  yb /= n;
-  axb /= n;
-  ayb /= n;
-  azb /= n;
+  rb = roll_sum / n;
+  pb = pitch_sum / n;
+  yb = yaw_sum / n;
+  axb = accX_sum / n;
+  ayb = accY_sum / n;
+  azb = accZ_sum / n;
 
   Serial.println("calibrated");
   Serial.println("roll \t pitch \t yaw");
 
-  Serial.print(rb);
+  Serial.print(rb, 13);
   Serial.print("\t");
-  Serial.print(pb);
+  Serial.print(pb, 13);
   Serial.print("\t");
-  Serial.print(yb);
+    Serial.print(yb, 13);
   Serial.print("\t");
 
-  Serial.println(axb);
+  Serial.print(axb, 13);
   Serial.print("\t");
-  Serial.println(ayb);
+  Serial.print(ayb, 13);
   Serial.print("\t");
-  Serial.println(azb);
+  Serial.println(azb, 13);
   delay(5000);
 }

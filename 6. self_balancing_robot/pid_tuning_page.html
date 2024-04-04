@@ -9,16 +9,20 @@
 
 <body>
     <label for='pValue'>P Value:</label>
-    <input type='range' min='0' max='255' value='50' class='slider' id='pValue' onInput="sendData();">
-    <span id="p_value_text">50</span>
+    <input type='range' min='0' max='0.5' value='0.5' step="0.0001" class='slider' id='pValue' onInput="sendData();">
+    <span id="p_value_text">0.5</span>
     <br><br>
     <label for='iValue'>I Value:</label>
-    <input type='range' min='0' max='255' value='50' class='slider' id='iValue' onInput="sendData();">
-<span id="i_value_text">50</span>
+    <input type='range' min='0' max='0.5' value='0.0001' step="0.0001" class='slider' id='iValue' onInput="sendData();">
+    <span id="i_value_text">0.0001</span>
     <br><br>
     <label for='dValue'>D Value:</label>
-    <input type='range' min='0' max='255' value='50' class='slider' id='dValue'onInput="sendData();">
-<span id="d_value_text">50</span>
+    <input type='range' min='0' max='0.5' value='0.5' step="0.0001" class='slider' id='dValue' onInput="sendData();">
+    <span id="d_value_text">0.5</span>
+    <br><br>
+    <h2>Gyro values</h2>
+    <div>roll: <span id="roll_value">0</span></div>
+    <div>pitch: <span id="pitch_value">0</span></div>
 
     <script>
         function sendData() {
@@ -26,20 +30,39 @@
             const iValue = document.getElementById('iValue').value;
             const dValue = document.getElementById('dValue').value;
 
-	    const p_value_text = document.getElementById('p_value_text');
-	    const i_value_text = document.getElementById('i_value_text');
-	    const d_value_text = document.getElementById('d_value_text');
-	    p_value_text.innerText = pValue ;
-	    i_value_text.innerText = iValue ;
-	    d_value_text.innerText = dValue ;
+            const p_value_text = document.getElementById('p_value_text');
+            const i_value_text = document.getElementById('i_value_text');
+            const d_value_text = document.getElementById('d_value_text');
+            p_value_text.innerText = pValue;
+            i_value_text.innerText = iValue;
+            d_value_text.innerText = dValue;
+
+            const roll_value = document.getElementById('roll_value');
+            const pitch_value = document.getElementById('pitch_value');
 
             const xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
+            xhr.onreadystatechange = function () {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     if (xhr.status === 200) {
                         // Response received successfully
                         console.log("Server response: " + xhr.responseText);
-                        // Add your actions based on the response here
+                        // Parse and display the data from the response
+                        const responseData = xhr.responseText;
+                        let roll, pitch;
+                        const values = responseData.split(',').map(value => parseFloat(value.trim()));
+                        if (values.length === 2 && !isNaN(values[0]) && !isNaN(values[1])) {
+                             roll = values[0];
+                             pitch = values[1];
+                            // Use roll and pitch values here
+                        } else {
+                            console.error("Invalid response data:", responseData);
+                            // Handle the error appropriately
+                        }
+
+                        console.log("Roll: " + roll);
+                        console.log("Pitch: " + pitch);
+                        roll_value.innerText = roll;
+                        pitch_value.innerText = pitch;
                     } else {
                         // Error handling
                         console.error("Error: " + xhr.status);
@@ -47,7 +70,7 @@
                 }
             };
 
-            const url = 'http://192.168.133.251:80/?p=' + pValue + '&i=' + iValue + '&d=' + dValue;
+            const url = 'http://192.168.186.251:80/?p=' + pValue + '&i=' + iValue + '&d=' + dValue;
             xhr.open('GET', url, true);
             xhr.send();
         }
