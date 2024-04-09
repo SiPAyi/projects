@@ -6,9 +6,9 @@ WebServer server(80);
 
 
 // for pid tuning
-float p = 1;
-float i = 0.01;
-float d = 1;
+float p = 0.4219;
+float i = 0.003;
+float d = 0.4219;
 int measures = 0;
 int prev_error = 0, error_sum = 0;
 int pid_out;

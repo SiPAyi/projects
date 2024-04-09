@@ -1,20 +1,20 @@
-#define ENA D3
-#define IN_1 D4
-#define IN_2 D5
-#define IN_3 D6
-#define IN_4 D7
-#define ENB D8
+#define ENA 13
+#define IN_1 12
+#define IN_2 14
+#define IN_3 27
+#define IN_4 26
+#define ENB 25
  
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include <WiFiClient.h>
-#include <ESP8266WebServer.h>
+#include <WebServer.h>
  
 String command;
 int speedCar = 800;
 int speed_Coeff = 3;
  
 const char* ssid = "JUMBO1";
-ESP8266WebServer server(80);
+WebServer server(80);
  
 void setup() {
  
