@@ -2,6 +2,8 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 
+ESP8266WebServer server(80);
+
 
 // pid controller
 float instruction[4] = { 0, 0, 0, 30 };          // [Yaw (cardinal direction), Pitch (x), Roll (y), Throttle]
@@ -30,7 +32,6 @@ int speedCar = 800;
 int speed_Coeff = 3;
 
 const char* ssid = "SEBARO";
-ESP8266WebServer server(80);
 
 void setup() {
 

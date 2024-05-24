@@ -68,7 +68,7 @@ void receive_data() {
       Serial.println("loose the connection since 5 seconds");
     } else {
       // close_eyes();
-      Serial.println("im not getting the signal");
+      // Serial.println("im not getting the signal");
     }
   }
 }

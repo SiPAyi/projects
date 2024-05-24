@@ -47,7 +47,7 @@ void stopMotors() {
 }
 
 void servoTest() {
-  int speed = map(data.pid, 0, 255, 0, 180);
+  int speed = map(data.throttle, 0, 255, 0, 180);
   Serial.println(speed);
   display_speed(speed);
 
@@ -55,4 +55,23 @@ void servoTest() {
   motor_rf.write(speed);
   motor_lb.write(speed);
   motor_rb.write(speed);
+}
+
+void rc_car_mode(){
+  int left_motor = data.throttle + data.yaw;
+  int right_motor = data.throttle - data.yaw;
+
+      // Cauculate new target throttle for each motor
+    motor_lf_throttle = data.throttle + data.yaw;
+    motor_lb_throttle = data.throttle + data.yaw;
+    motor_rf_throttle = data.throttle - data.yaw;
+    motor_rb_throttle = data.throttle - data.yaw;
+
+    // Scale values to be within acceptable range for motors
+    motor_lf_throttle = minMax(motor_lf_throttle, 30, 100);
+    motor_rf_throttle = minMax(motor_rf_throttle, 30, 100);
+    motor_lb_throttle = minMax(motor_lb_throttle, 30, 100);
+    motor_rb_throttle = minMax(motor_rb_throttle, 30, 100);
+
+    applyMotorSpeeds();
 }

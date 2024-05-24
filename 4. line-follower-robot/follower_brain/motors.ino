@@ -66,7 +66,7 @@ int min_max(int motor_speed) {
   if (motor_speed > max_pwm) {
     motor_speed = max_pwm;
   } else if (motor_speed < min_pwm) {
-    motor_speed = min_pwm;
+    motor_speed = min=_pwm;
   }
   return motor_speed;
 }

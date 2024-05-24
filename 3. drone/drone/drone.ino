@@ -53,12 +53,13 @@ void setup() {
   Serial.println("Fligh Started");
   leds_setup();  // three leds i put on the drone will output the state it is in
 
-  display_setup();  // need to implement it later or remove it
+  // display_setup();  // need to implement it later or remove it
 
-  kalman_gyro_setup();  // setuping gyro
+  // kalman_gyro_setup();  // setuping gyro
   // gyro_setup();
 
   // receiver_setup2();
+  receiver_setup();
 
   setup_motors();
 
@@ -72,12 +73,15 @@ void loop() {
   if (millis() - prev_time >= time_step) {
     prev_time = millis();
 
-    // receive_data(); // * it shows that radio is connected in the serial monitor
+    receive_data();  // * it shows that radio is connected in the serial monitor
 
-    kalman_filtered_angles();  // ^ this means got the gyro values
+    servoTest();
+
+    // rc_car_mode();
+    // kalman_filtered_angles();  // ^ this means got the gyro values
     // gyro_without_bias();
 
-    pidController();
+    // pidController();
 
     // Serial.print(measures[ROLL]);
     // Serial.print(",");

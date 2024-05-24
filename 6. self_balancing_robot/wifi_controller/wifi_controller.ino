@@ -1,149 +1,163 @@
-#define ENA 13
-#define IN_1 12
-#define IN_2 14
-#define IN_3 27
-#define IN_4 26
-#define ENB 25
- 
-#include <WiFi.h>
-#include <WiFiClient.h>
-#include <WebServer.h>
- 
+// #define ENA D0
+// #define IN_1 D1
+// #define IN_2 D2
+// #define IN_3 D3
+// #define IN_4 D4
+// #define ENB D5
+
+// // for nodemcu
+// #include <ESP8266WiFi.h>
+// #include <WiFiClient.h>
+// #include <ESP8266WebServer.h>
+
+
+// #define ENA 13
+// #define IN_1 12
+// #define IN_2 14
+// #define IN_3 27
+// #define IN_4 26
+// #define ENB 25
+
+// // for esp32
+// #include <WiFi.h>
+// #include <WiFiClient.h>
+// #include <WebServer.h>
+
 String command;
 int speedCar = 800;
 int speed_Coeff = 3;
- 
-const char* ssid = "JUMBO1";
+
+const char* ssid = "soccernoob";
 WebServer server(80);
- 
+
 void setup() {
- 
+
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
   pinMode(IN_1, OUTPUT);
   pinMode(IN_2, OUTPUT);
   pinMode(IN_3, OUTPUT);
   pinMode(IN_4, OUTPUT);
- 
+
   Serial.begin(9600);
- 
+
   // Connecting WiFi
- 
+
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid);
- 
+
   IPAddress myIP = WiFi.softAPIP();
   Serial.print("AP IP address: ");
   Serial.println(myIP);
- 
+
   // Starting WEB-server
   server.on("/", HTTP_handleRoot);
   server.onNotFound(HTTP_handleRoot);
   server.begin();
 }
- 
+
 void goAhead() {
- 
+
   digitalWrite(IN_1, LOW);
   digitalWrite(IN_2, HIGH);
   analogWrite(ENA, speedCar);
- 
+
   digitalWrite(IN_3, LOW);
   digitalWrite(IN_4, HIGH);
   analogWrite(ENB, speedCar);
 }
- 
+
 void goBack() {
- 
+
   digitalWrite(IN_1, HIGH);
   digitalWrite(IN_2, LOW);
   analogWrite(ENA, speedCar);
- 
+
   digitalWrite(IN_3, HIGH);
   digitalWrite(IN_4, LOW);
   analogWrite(ENB, speedCar);
 }
- 
+
 void goRight() {
- 
+
   digitalWrite(IN_1, HIGH);
   digitalWrite(IN_2, LOW);
   analogWrite(ENA, speedCar);
- 
+
   digitalWrite(IN_3, LOW);
   digitalWrite(IN_4, HIGH);
   analogWrite(ENB, speedCar);
 }
- 
+
 void goLeft() {
- 
+
   digitalWrite(IN_1, LOW);
   digitalWrite(IN_2, HIGH);
   analogWrite(ENA, speedCar);
- 
+
   digitalWrite(IN_3, HIGH);
   digitalWrite(IN_4, LOW);
   analogWrite(ENB, speedCar);
 }
- 
+
 void goAheadRight() {
- 
+
   digitalWrite(IN_1, LOW);
   digitalWrite(IN_2, HIGH);
   analogWrite(ENA, speedCar / speed_Coeff);
- 
+
   digitalWrite(IN_3, LOW);
   digitalWrite(IN_4, HIGH);
   analogWrite(ENB, speedCar);
 }
- 
+
 void goAheadLeft() {
- 
+
   digitalWrite(IN_1, LOW);
   digitalWrite(IN_2, HIGH);
   analogWrite(ENA, speedCar);
- 
+
   digitalWrite(IN_3, LOW);
   digitalWrite(IN_4, HIGH);
   analogWrite(ENB, speedCar / speed_Coeff);
 }
- 
+
 void goBackRight() {
- 
+
   digitalWrite(IN_1, HIGH);
   digitalWrite(IN_2, LOW);
   analogWrite(ENA, speedCar / speed_Coeff);
- 
+
   digitalWrite(IN_3, HIGH);
   digitalWrite(IN_4, LOW);
   analogWrite(ENB, speedCar);
 }
- 
+
 void goBackLeft() {
- 
+
   digitalWrite(IN_1, HIGH);
   digitalWrite(IN_2, LOW);
   analogWrite(ENA, speedCar);
- 
+
   digitalWrite(IN_3, HIGH);
   digitalWrite(IN_4, LOW);
   analogWrite(ENB, speedCar / speed_Coeff);
 }
- 
+
 void stopRobot() {
- 
+
   digitalWrite(IN_1, LOW);
   digitalWrite(IN_2, LOW);
   analogWrite(ENA, speedCar);
- 
+
   digitalWrite(IN_3, LOW);
   digitalWrite(IN_4, LOW);
   analogWrite(ENB, speedCar);
 }
- 
+
 void loop() {
   server.handleClient();
- 
+
   command = server.arg("State");
   if (command == "F") goAhead();
   else if (command == "B") goBack();
@@ -165,9 +179,9 @@ void loop() {
   else if (command == "9") speedCar = 1023;
   else if (command == "S") stopRobot();
 }
- 
+
 void HTTP_handleRoot(void) {
- 
+
   if (server.hasArg("State")) {
     Serial.println(server.arg("State"));
   }

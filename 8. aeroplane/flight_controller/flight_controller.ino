@@ -25,9 +25,9 @@ void setup() {
 void loop() {
   receive_data();
 
-  // motor_control();
+  motor_control();
 
-  test();
+  // test();
 
   // Serial.print("\t roll : ");
   // Serial.print(data.roll);

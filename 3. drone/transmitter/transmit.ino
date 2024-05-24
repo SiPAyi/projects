@@ -10,7 +10,7 @@ void transmit_data() {
 
 
 
-  radio.write(&data, sizeof(Signal));
+  // radio.write(&data, sizeof(Signal));
 
   // disp_measures();
 

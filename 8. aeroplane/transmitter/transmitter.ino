@@ -1,3 +1,4 @@
+#include <LiquidCrystal.h>
 #include <SPI.h>
 #include <RF24.h>
 
@@ -15,12 +16,11 @@ struct Signal {
 };
 Signal data;
 
-// lx(roll)-a3 ly(pitch)-a4 rx(yaw)-a2 ry(throttle)-a1 voltage_divider-A5  swl-7, swr-8
+// lx(roll)-a0 ly(pitch)-a1 rx(yaw)-a2 ry(throttle)-a3 voltage_divider-A5  swl-7, swr-8
 int throttle_pin = A1;
-int yaw_pin = A2;
-int pitch_pin = A0;
-int roll_pin = A3;
-int pid_pin = A4;
+int yaw_pin = A0;
+int pitch_pin = A3;
+int roll_pin = A2;
 int switch1 = 7;
 int switch2 = 8;
 
@@ -33,41 +33,43 @@ void ResetData() {
   data.yaw = 0;
 }
 
-int status_led = 6;
+int status_led = 8;
 int status = 0;
 
 // for frequecy of execution
 int time_step = 4;
 double prev_time = millis();
 
+// initialize the library by associating any needed LCD interface pin
+// with the arduino pin number it is connected to
+const int rs = 7, en = 6, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
 void setup() {
 
   // display_setup();
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  // Print a message to the LCD.
+  lcd.print("hello, world!");
+  lcd.clear();
 
   ResetData();
 
-  pinMode(A5, INPUT);
-  pinMode(A4, INPUT);
-  pinMode(A3, INPUT);
-  pinMode(A2, INPUT);
-  pinMode(7, INPUT);
-  pinMode(8, INPUT);
-
-  pinMode(6, OUTPUT);
+  pinMode(0, INPUT);
+  pinMode(1, INPUT);
+  pinMode(8, OUTPUT);
 
   Serial.begin(9600);
 
   // // initialize the transceiver on the SPI bus
   // if (!radio.begin()) {
   //   Serial.println(F("radio hardware is not responding!!"));
-  //   // disp_radio_check(0);
   //   while (1) {}  // hold in infinite loop
   // }
   // radio.openWritingPipe(address);
   // radio.setPALevel(RF24_PA_LOW);
-  // disp_radio_check(1);
   // Serial.println("radio connected");
-
   // radio.stopListening();  // put radio in TX mode
 
   digitalWrite(status_led, 1);
@@ -82,6 +84,30 @@ void setup() {
 
 void loop() {
   Serial.println(String() + "throttle: " + analogRead(throttle_pin) + "\tyaw: " + analogRead(yaw_pin) + "\troll: " + analogRead(roll_pin) + "\tpitch: " + analogRead(pitch_pin));
-  // transmit_data();
-  // receive_data();
+  transmit_data();
+}
+
+void transmit_data() {
+  data.throttle = map(analogRead(throttle_pin), 0, 1023, 0, 255);
+  data.yaw = map(analogRead(yaw_pin), 0, 1023, 0, 255);
+  data.pitch = map(analogRead(pitch_pin), 0, 1023, 0, 255);
+  data.roll = map(analogRead(roll_pin), 0, 1023, 0, 255);
+
+
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print(String() + "lx:" + data.yaw);
+
+  lcd.setCursor(8, 0);
+  lcd.print(String() + "ly:" + data.throttle);
+
+  lcd.setCursor(0, 1);
+  lcd.print(String() + "rx:" + data.roll);
+
+  lcd.setCursor(8, 1);
+  lcd.print(String() + "ry:" + data.pitch);
+
+
+  // radio.write(&data, sizeof(Signal));
 }
