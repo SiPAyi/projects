@@ -1,17 +1,3 @@
-// #define ENA 12
-// #define IN_1 14
-// #define IN_2 27
-// #define IN_3 32
-// #define IN_4 35
-// #define ENB 34
-// if the above one doesnt work
-// #define ENA 13
-// #define IN_1 12
-// #define IN_2 14
-// #define IN_3 27
-// #define IN_4 26
-// #define ENB 25
-
 #define ENA 16
 #define IN_1 0
 #define IN_2 2

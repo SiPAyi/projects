@@ -1,12 +1,9 @@
 // for radio communication, controller data-type
 struct Signal {
-  bool switch1;
-  bool switch2;
-  byte pitch;     // ry
   byte throttle;  // ly
-  byte yaw;       // lx
+  byte pitch;     // ry
   byte roll;      // rx
-  byte pid;
+  byte yaw;       // lx
 };
 Signal data;
 
@@ -20,23 +17,15 @@ void setup() {
 
   motor_setup();
   receiver_setup();
+  // delay(3000);
 }
 
 void loop() {
+  // servo_test();
   receive_data();
-
-  motor_control();
-
-  // test();
-
-  // Serial.print("\t roll : ");
-  // Serial.print(data.roll);
-  // Serial.print("\t pitch : ");
-  // Serial.print(data.pitch);
-  // Serial.print("\t yaw : ");
-  // Serial.print(data.yaw);
-  // Serial.print("\t throttle : ");
-  // Serial.print(data.throttle);
-  // Serial.print("\t pid : ");
-  // Serial.println(data.pid);
+  if (radio_status_count < 500) {
+    motor_control();
+  }else{
+    stop_motors();
+  }
 }

@@ -18,7 +18,7 @@ void motor_setup() {
   pitch_servo.attach(9);
   yaw_servo.attach(10);
 
-  esc.write(0);
+  esc.writeMicroseconds(1050);
   roll_servo_left.write(max_roll);
   roll_servo_right.write(max_roll);
   pitch_servo.write(max_pitch);
@@ -69,26 +69,30 @@ int minmax(int value, int min_value, int max_value) {
   return value;
 }
 
-void test() {
-  int speed = data.throttle + 950;
-  esc.writeMicroseconds(speed);
-  Serial.println(speed);
-}
-
 void servo_test() {
-  for (pos = 0; pos <= 180; pos += 1) {  // goes from 0 degrees to 180 degrees
+  for (int pos = 0; pos <= 180; pos += 1) {  // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
+    esc.write(pos);   // tell servo to go to position in variable 'pos'
     roll_servo_left.write(pos);   // tell servo to go to position in variable 'pos'
     roll_servo_right.write(pos);  // tell servo to go to position in variable 'pos'
     pitch_servo.write(pos);       // tell servo to go to position in variable 'pos'
     yaw_servo.write(pos);         // tell servo to go to position in variable 'pos'
     delay(15);                    // waits 15 ms for the servo to reach the position
   }
-  for (pos = 180; pos >= 0; pos -= 1) {  // goes from 180 degrees to 0 degrees
+  for (int pos = 180; pos >= 0; pos -= 1) {  // goes from 180 degrees to 0 degrees
+    esc.write(pos);          // tell servo to go to position in variable 'pos'
     roll_servo_left.write(pos);          // tell servo to go to position in variable 'pos'
     roll_servo_right.write(pos);         // tell servo to go to position in variable 'pos'
     pitch_servo.write(pos);              // tell servo to go to position in variable 'pos'
     yaw_servo.write(pos);                // tell servo to go to position in variable 'pos'
     delay(15);                           // waits 15 ms for the servo to reach the position
   }
+}
+
+void stop_motors(){
+    esc.write(0);
+  roll_servo_left.write(45);
+  roll_servo_right.write(45);
+  pitch_servo.write(45);
+  yaw_servo.write(45);
 }

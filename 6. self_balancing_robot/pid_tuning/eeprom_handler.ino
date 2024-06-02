@@ -9,21 +9,24 @@ const int addr_yb = addr_pb + sizeof(float);
 const int addr_axb = addr_yb + sizeof(float);
 const int addr_ayb = addr_axb + sizeof(float);
 const int addr_azb = addr_ayb + sizeof(float);
-const byte marker = 0xAB;  // Marker value to indicate EEPROM is initialized
+const byte marker = 0xAA;  // Marker value to indicate EEPROM is initialized
 
 void isEEPROMInitialized() {
   EEPROM.begin(EEPROM_SIZE);
   byte flag = EEPROM.read(addr_flag);
   EEPROM.end();
   if(flag == marker){
+    Serial.println("bias values loading from eeprom");
     loadValuesFromEEPROM();
   }else{
+    Serial.println("getting bias values because no values availave at this movement");
     bias_values();
   }
 }
 
 void saveValuesToEEPROM() {
   EEPROM.begin(EEPROM_SIZE);
+  EEPROM.put(addr_flag, marker);
   EEPROM.put(addr_rb, rb);
   EEPROM.put(addr_pb, pb);
   EEPROM.put(addr_yb, yb);

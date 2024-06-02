@@ -7,10 +7,12 @@
 
 
 // to store values gyro and acceleration values
-float roll, pitch, yaw, accX, accY, accZ;                 // raw values
-float g_roll, g_pitch, g_yaw;                             // rotations from gyro
-float a_roll, a_pitch;                                    // rotations from accelerometer
-float real_roll, real_pitch, real_yaw;                    // filtered values
+float roll, pitch, yaw, accX, accY, accZ;  // raw values
+float g_roll, g_pitch, g_yaw;              // rotations from gyro
+float a_roll, a_pitch;                     // rotations from accelerometer
+float real_roll, real_pitch, real_yaw;     // filtered values
+
+float roll_calib_factor = 1, pitch_calib_factor = 1, yaw_calib_factor = 1;
 
 void gyro_setup() {
   Wire.setClock(400000);
@@ -30,14 +32,15 @@ void gyro_setup() {
   digitalWrite(LED_BUILTIN, LOW);
 
   isEEPROMInitialized();
-
   // to get the bias offset values of the mpu6050
-  // rb = -2.9979395866394;
-  // pb = -5.1416850090027;
-  // yb = -0.8455882072449;
-  // axb = -0.0460012219846;
-  // ayb = 0.0108886715025;
-  // azb = 1.0262498855591;
+  rb = -2.9979395866394;
+  pb = -5.1416850090027;
+  yb = -0.8455882072449;
+  axb = -0.0460012219846;
+  ayb = 0.0108886715025;
+  azb = 1.0262498855591;
+
+  get_staring_pos();
 }
 
 
@@ -89,9 +92,9 @@ void get_gyro_values(void) {
 void gyro_without_bias() {
   get_gyro_values();
 
-  g_roll += (roll - rb) * (time_step * 5.5 / 1000.0);
-  g_pitch += (pitch - pb) * (time_step * 5.5 / 1000.0);
-  g_yaw += (yaw - yb) * (time_step * 5.5 / 1000.0);
+  g_roll += (roll - rb) * (time_step / 1000.0) * roll_calib_factor;  // angular velociry * time * calib_factor
+  g_pitch += (pitch - pb) * (time_step / 1000.0) * pitch_calib_factor;
+  g_yaw += (yaw - yb) * (time_step / 1000.0) * yaw_calib_factor;
 
   a_roll = atan2(accY, accZ) * 180.0 / PI;
   a_pitch = atan2(-accX, sqrt(accY * accY + accZ * accZ)) * 180.0 / PI;
@@ -109,7 +112,7 @@ void gyro_without_bias() {
 }
 
 void bias_values() {
-  Serial.println("wait bro im calibrating mpu6050");
+  Serial.println("wait bro im finding the error values in mpu6050");
   int n = 2000;  // number of times need to sum
   float roll_sum = 0;
   float pitch_sum = 0;
@@ -126,7 +129,8 @@ void bias_values() {
     accX_sum += accX;
     accY_sum += accY;
     accZ_sum += accZ;
-    Serial.print(".");
+
+    Serial.println(String() + (float)(i / n) * 100 + "% completed");
   }
   n = (float)n;
   rb = roll_sum / n;
@@ -136,7 +140,7 @@ void bias_values() {
   ayb = accY_sum / n;
   azb = accZ_sum / n;
 
-  Serial.println("calibrated");
+  Serial.println("\ncalibrated");
   Serial.println("roll \t pitch \t yaw \t accX \t accY \t accZ");
 
   Serial.print(rb, 13);
@@ -152,4 +156,21 @@ void bias_values() {
   Serial.print("\t");
   Serial.println(azb, 13);
   askToSave();
+}
+
+void get_staring_pos() {
+  get_gyro_values();
+  float avg_start_roll = 0, avg_start_pitch = 0;
+  for (int i = 0; i < 100; i++) {
+    a_roll = atan2(accY, accZ) * 180.0 / PI;
+    a_pitch = atan2(-accX, sqrt(accY * accY + accZ * accZ)) * 180.0 / PI;
+    avg_start_roll += a_roll;
+    avg_start_pitch += a_pitch;
+  }
+  g_roll = avg_start_roll / 100;
+  g_pitch = avg_start_pitch / 100;
+  Serial.print(String() + "starting roll values : " + g_roll + "\tstarting pitch value : " + g_pitch);
+  // while(true){ // while debugging used it
+  //   delay(5000);
+  // }
 }

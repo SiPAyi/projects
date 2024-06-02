@@ -6,27 +6,22 @@ RF24 radio(9, 10);  // CE, CSN pins
 const byte address[6] = "00001";
 
 struct Signal {
-  bool switch1;
-  bool switch2;
   byte throttle;
   byte pitch;
   byte roll;
   byte yaw;
-  byte pid;
 };
 Signal data;
 
 // lx(roll)-a0 ly(pitch)-a1 rx(yaw)-a2 ry(throttle)-a3 voltage_divider-A5  swl-7, swr-8
-int throttle_pin = A1;
-int yaw_pin = A0;
-int pitch_pin = A3;
-int roll_pin = A2;
+int throttle_pin = A0;
+int yaw_pin = A1;
+int pitch_pin = A2;
+int roll_pin = A3;
 int switch1 = 7;
 int switch2 = 8;
 
 void ResetData() {
-  data.switch1 = 0;
-  data.switch2 = 0;
   data.throttle = 0;
   data.pitch = 0;
   data.roll = 0;
@@ -62,15 +57,20 @@ void setup() {
 
   Serial.begin(9600);
 
-  // // initialize the transceiver on the SPI bus
-  // if (!radio.begin()) {
-  //   Serial.println(F("radio hardware is not responding!!"));
-  //   while (1) {}  // hold in infinite loop
-  // }
-  // radio.openWritingPipe(address);
-  // radio.setPALevel(RF24_PA_LOW);
-  // Serial.println("radio connected");
-  // radio.stopListening();  // put radio in TX mode
+  // initialize the transceiver on the SPI bus
+  if (!radio.begin()) {
+    Serial.println(F("radio hardware is not responding!!"));
+    lcd.clear();
+    lcd.print("radio hardware");
+    lcd.setCursor(0, 1);
+    lcd.print("not responding");
+
+    while (1) {}  // hold in infinite loop
+  }
+  radio.openWritingPipe(address);
+  radio.setPALevel(RF24_PA_LOW);
+  Serial.println("radio connected");
+  radio.stopListening();  // put radio in TX mode
 
   digitalWrite(status_led, 1);
   delay(200);
@@ -97,17 +97,17 @@ void transmit_data() {
   lcd.clear();
 
   lcd.setCursor(0, 0);
-  lcd.print(String() + "lx:" + data.yaw);
+  lcd.print(String() + "yaw:" + data.yaw);
 
   lcd.setCursor(8, 0);
-  lcd.print(String() + "ly:" + data.throttle);
+  lcd.print(String() + "thr:" + data.throttle);
 
   lcd.setCursor(0, 1);
-  lcd.print(String() + "rx:" + data.roll);
+  lcd.print(String() + "rol:" + data.roll);
 
   lcd.setCursor(8, 1);
-  lcd.print(String() + "ry:" + data.pitch);
+  lcd.print(String() + "pit:" + data.pitch);
 
 
-  // radio.write(&data, sizeof(Signal));
+  radio.write(&data, sizeof(Signal));
 }

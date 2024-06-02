@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PID Tunner</title>
+    <title>SeBaRo</title>
     <style>
         body {
             margin: 0px;
@@ -14,7 +14,13 @@
             text-align: center;
             padding: 30px;
             margin: 0px;
-            background: #4CAF50;
+            background: #dadf3bf2;
+            /* background: #4CAF50; */
+            
+        }
+
+        h2 {
+            margin-top: 0px;
         }
 
         #input_control {
@@ -67,7 +73,7 @@
         #change_min_max,
         #change_ip {
             padding: 10px 20px;
-            background: #4CAF50;
+            background: #dadf3bf2;
             border-radius: 10px;
             margin: 10px 10px 10px 30px;
             display: flex;
@@ -81,10 +87,12 @@
             margin: 15px auto;
             justify-content: space-around;
             max-width: 900px;
+            flex-direction: column;
+            row-gap: 10px;
         }
 
         #input,
-        #robot_orientation {
+        #robot_parameters {
             padding: 15px;
             display: flex;
             flex-direction: column;
@@ -93,7 +101,7 @@
             border: 1px solid #dfd6d6;
             border-radius: 5px;
             margin: 0px 10px;
-            box-shadow: 2px 2px 5px rgb(110 108 108 / 39%), -2px -2px 5px rgb(110 108 108 / 39%);
+            box-shadow: 1px 1px 1px rgb(110 108 108 / 39%), -1px -1px 1px rgb(110 108 108 / 39%);
         }
 
         #input {
@@ -106,25 +114,11 @@
 
         #response {
             display: flex;
-            flex-direction: column;
             margin: 10px;
-            justify-content: center;
+            justify-content: space-evenly;
             align-items: center;
-        }
-
-        @media screen and (max-width: 800px) {
-            #robot_control {
-                flex-direction: column;
-                row-gap: 10px;
-            }
-
-            #response {
-                flex-direction: row;
-                justify-content: space-around;
-                align-items: stretch;
-                align-content: center;
-                width: 100%;
-            }
+            width: 100%;
+            flex-wrap: wrap;
         }
 
         @media screen and (max-width: 650px) {
@@ -153,9 +147,9 @@
             }
 
             #input,
-            #robot_orientation {
+            #robot_parameters {
                 padding: 10px;
-                margin: 0px 0px;
+                margin: 0px 10px;
             }
 
 
@@ -172,11 +166,11 @@
 </head>
 
 <body>
-    <h1>PID Tunner</h1>
+    <h1>SeBaRo</h1>
     <br>
 
     <script>
-        let ip_address = "192.168.195.221";
+        let ip_address = "192.168.195.42";
 
         function changeIp() {
             const ipDiv = document.getElementById("ip_address_span");
@@ -203,7 +197,7 @@
     <div id="input_control">
         <div>
             <div id="ip_address" editable>IP address: <span contenteditable="true"
-                    id="ip_address_span">192.168.195.221</span></div>
+                    id="ip_address_span">192.168.195.42</span> <span id="connection_status">Not Connected</span></div>
             <div id="change_ip" onclick="console.log('changed ip'); changeIp();">change IP</div>
         </div>
         <div>
@@ -227,9 +221,19 @@
             </div>
         </div>
 
-    </div><br>
+    </div>
 
     <div id="robot_control">
+        <div id="robot_parameters">
+            <h2>Robot Parameters:</h2>
+            <div id="response">
+                <div>Roll: <span id="roll">0</span></div><br>
+                <div>Pitch: <span id="pitch">0</span></div><br>
+                <div>Yaw: <span id="yaw">0</span></div><br>
+                <div>PID Out: <span id="pid_out">0</span></div><br>
+            </div>
+        </div>
+
         <div id="input">
             <h2>PID Values:</h2>
             <div id="pid_input">
@@ -249,26 +253,19 @@
                 <br><br>
             </div>
         </div>
-
-        <div id="robot_orientation">
-            <h2>Robot Orientation:</h2>
-            <div id="response">
-                <div>Roll: <span id="roll">0</span></div><br>
-                <div>Pitch: <span id="pitch">0</span></div><br>
-                <div>Yaw: <span id="yaw">0</span></div><br>
-            </div>
-        </div>
     </div>
     <br>
 
     <script>
         let ws;
-
+        const conn_status_div = document.getElementById("connection_status");
         function connectWebSocket() {
             ws = new WebSocket("ws://" + ip_address + "/");
 
+
             ws.onopen = function (event) {
                 console.log("Connected to WebSocket server");
+                conn_status_div.innerText = "connected";
             };
 
             ws.onmessage = function (event) {
@@ -277,21 +274,25 @@
                 const roll_value_div = document.getElementById("roll");
                 const pitch_value_div = document.getElementById("pitch");
                 const yaw_value_div = document.getElementById("yaw");
+                const pid_out_value_div = document.getElementById("pid_out");
 
                 const responseData = event.data;
-                let roll, pitch, yaw;
+                let roll, pitch, yaw, pid_out;
                 const values = responseData.split(',').map(value => parseFloat(value.trim()));
-                if (values.length === 3 && !isNaN(values[0]) && !isNaN(values[1]) && !isNaN(values[2])) {
+                if (values.length === 4 && !isNaN(values[0]) && !isNaN(values[1]) && !isNaN(values[2]) && !isNaN(values[3])) {
                     roll = values[0];
                     pitch = values[1];
                     yaw = values[2];
+                    pid_out = values[3];
                     // Use roll and pitch values here
                     console.log("Roll: " + roll);
                     console.log("Pitch: " + pitch);
                     console.log("Pitch: " + yaw);
+                    console.log("PID Out: " + pid_out);
                     roll_value_div.innerText = roll;
                     pitch_value_div.innerText = pitch;
                     yaw_value_div.innerText = yaw;
+                    pid_out_value_div.innerText = pid_out;
                 } else {
                     console.error("Invalid response data:", responseData);
                 }
@@ -301,6 +302,7 @@
                 console.error("WebSocket error observed:", event);
                 // Attempt to reconnect after a short delay
                 setTimeout(connectWebSocket, 2000);
+                conn_status_div.innerText = "connected";
             };
         }
 
@@ -315,9 +317,10 @@
             p_value_text.innerText = pValue;
             i_value_text.innerText = iValue;
             d_value_text.innerText = dValue;
+            let mode = 1;
             if (ws.readyState === WebSocket.OPEN) {
 
-                const message = pValue + "," + iValue + "," + dValue;
+                const message = pValue + "," + iValue + "," + dValue + "," + mode;
                 ws.send(message);
             } else {
                 console.error("WebSocket connection is not open.");

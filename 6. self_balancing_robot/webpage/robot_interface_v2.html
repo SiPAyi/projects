@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeBaRo</title>
+    <style>
+        body {
+            margin: 0px;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 30px;
+            margin: 0px;
+            background: #dadf3bf2;
+        }
+
+        h2 {
+            margin: 0px;
+        }
+
+        #ip_address {
+            display: flex;
+            max-width: 900px;
+            margin: 10px auto;
+            align-content: center;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #ip_address>div {
+            display: flex;
+            align-items: center;
+        }
+
+        #change_ip {
+            padding: 10px 20px;
+            background: #dadf3bf2;
+            border-radius: 10px;
+            margin: 10px 10px 10px 21px;
+            display: flex;
+            align-items: center;
+            width: 100px;
+            justify-content: center;
+        }
+
+        #robot_control {
+            display: flex;
+            margin: 15px auto;
+            justify-content: space-around;
+            max-width: 900px;
+            flex-direction: column;
+            row-gap: 10px;
+        }
+
+        #robot_parameters,
+        #input {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            border: 1px solid #dfd6d6;
+            border-radius: 5px;
+            margin: 0px 10px;
+            box-shadow: 1px 1px 1px rgb(110 108 108 / 39%), -1px -1px 1px rgb(110 108 108 / 39%);
+            gap: 8px;
+        }
+
+        #input {
+            min-width: 75%;
+        }
+
+        #response {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            width: 100%;
+            flex-wrap: wrap;
+            row-gap: 5px;
+        }
+
+        #response div {
+            min-width: 108px;
+        }
+
+        #message_from_robot {
+            display: flex;
+            width: 100%;
+            margin-left: 20px;
+        }
+
+        #pid_input {
+            width: 100%;
+        }
+
+        #min_values,
+        #max_values {
+            display: flex;
+            gap: 10px;
+        }
+
+        .min_max {
+            display: flex;
+            align-content: center;
+            justify-content: space-between;
+
+        }
+
+        .min_max>input {
+            max-width: 60px;
+            border: none;
+        }
+
+        .min_max>.maxs {
+            text-align: end;
+        }
+
+
+        @media screen and (max-width: 450px) {
+
+            #ip_address {
+                margin: 10px;
+            }
+
+            #input,
+            #robot_parameters {
+                padding: 10px;
+                margin: 0px 10px;
+            }
+
+            #change_ip {
+                padding: 5px 0px;
+                margin: 0px 10px;
+                width: 65px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>SeBaRo</h1>
+    <script>
+        function changeMinMax() {
+            const pvalueDiv = document.getElementById("pValue");
+            const ivalueDiv = document.getElementById("iValue");
+            const dvalueDiv = document.getElementById("dValue");
+
+            // alert(document.getElementById("pmax").value);
+            pvalueDiv.max = document.getElementById("pmax").value;
+            pvalueDiv.min = document.getElementById("pmin").value;
+            ivalueDiv.max = document.getElementById("imax").value;
+            ivalueDiv.min = document.getElementById("imin").value;
+            dvalueDiv.max = document.getElementById("dmax").value;
+            dvalueDiv.min = document.getElementById("dmin").value;
+        }
+    </script>
+
+    <div id="ip_address">
+        <div>
+            <span>IP address:
+                <span contenteditable="true" id="ip_address_span"> </span></span>
+            <span id="change_ip" onclick="console.log('changed ip'); changeIp();">change</span>
+        </div>
+
+        <span id="connection_status" style="padding: 5px;"> Not Connected</span>
+    </div>
+
+    <div id="robot_control">
+        <div id="robot_parameters">
+            <h2>Robot Parameters:</h2>
+            <div id="response">
+                <div>Roll: <span id="roll">0</span></div>
+                <div>Pitch: <span id="pitch">0</span></div>
+                <div>Yaw: <span id="yaw">0</span></div>
+                <div>PID Out: <span id="pid_out">0</span></div>
+            </div>
+            <div id="message_from_robot">
+                <!-- SeBaRo : <span id="message_from_sebaro">Hello!</span> -->
+            </div>
+        </div>
+
+        <div id="input">
+            <h2>PID Values:</h2>
+            <div id="pid_input">
+                <div class="min_max">
+                    <input type="number" id="pmin" value="20" class="mins"
+                        onchange="console.log('changed min max values'); changeMinMax();">
+                    <div><label for='pValue'>P Value: </label><span id="p_value_text">25</span></div>
+                    <input type="number" id="pmax" value="30" class="maxs"
+                        onchange="console.log('changed min max values'); changeMinMax();">
+                </div>
+                <input type='range' min='20' max='30' value='25' step="0.01" class='slider' id='pValue'
+                    onInput="sendMessage();" style="width:100%;">
+
+                <div class="min_max">
+                    <input type="number" id="imin" value="0" class="mins"
+                        onchange="console.log('changed min max values'); changeMinMax();">
+                    <div><label for='iValue'>I Value: </label><span id="i_value_text">0.5</span></div>
+                    <input type="number" id="imax" value="1" class="maxs"
+                        onchange="console.log('changed min max values'); changeMinMax();">
+                </div>
+                <input type='range' min='0' max='1' value='0.5' step="0.000001" class='slider' id='iValue'
+                    onInput="sendMessage();" style="width:100%;">
+
+                <div class="min_max">
+                    <input type="number" id="dmin" value="20" class="mins"
+                        onchange="console.log('changed min max values'); changeMinMax();">
+                    <div><label for='dValue'>D Value: </label><span id="d_value_text">25</span></div>
+                    <input type="number" id="dmax" value="30" class="maxs"
+                        onchange="console.log('changed min max values'); changeMinMax();">
+                </div>
+                <input type='range' min='20' max='30' value='25' step="0.01" class='slider' id='dValue'
+                    onInput="sendMessage();" style="width:100%;">
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <script>
+        let ip_address = "192.168.73.42";
+        const ipDiv = document.getElementById("ip_address_span");
+        ipDiv.innerText = ip_address;
+
+        let ws, prev_status = 0;
+        const conn_status_div = document.getElementById("connection_status");
+        function connectWebSocket() {
+            ws = new WebSocket("ws://" + ip_address + "/");
+            console.log("connecting to the websocket with address ws://" + ip_address + "/" + " type of ip_address " + typeof (ip_address))
+
+            ws.onopen = function (event) {
+                console.log("Connected to WebSocket server");
+                conn_status_div.innerText = "Connected";
+                prev_status = 1;
+            };
+
+            ws.onmessage = function (event) {
+                console.log("Server response: " + event.data);
+
+                const roll_value_div = document.getElementById("roll");
+                const pitch_value_div = document.getElementById("pitch");
+                const yaw_value_div = document.getElementById("yaw");
+                const pid_out_value_div = document.getElementById("pid_out");
+
+                const responseData = event.data;
+                let roll, pitch, yaw, pid_out;
+                const values = responseData.split(',').map(value => parseFloat(value.trim()));
+                if (values.length === 4 && !isNaN(values[0]) && !isNaN(values[1]) && !isNaN(values[2]) && !isNaN(values[3])) {
+                    roll = values[0];
+                    pitch = values[1];
+                    yaw = values[2];
+                    pid_out = values[3];
+                    // Use roll and pitch values here
+                    console.log("Roll: " + roll);
+                    console.log("Pitch: " + pitch);
+                    console.log("Pitch: " + yaw);
+                    console.log("PID Out: " + pid_out);
+                    roll_value_div.innerText = roll;
+                    pitch_value_div.innerText = pitch;
+                    yaw_value_div.innerText = yaw;
+                    pid_out_value_div.innerText = pid_out;
+                } else {
+                    console.error("Invalid response data:", responseData);
+                }
+            };
+
+            ws.onerror = function (event) {
+                console.error("WebSocket error observed:", event);
+                // Attempt to reconnect after a short delay
+                setTimeout(connectWebSocket, 2000);
+                if (prev_status) {
+                    conn_status_div.innerText = "disconnected";
+                } else {
+                    conn_status_div.innerText = "Not Connected";
+                }
+            };
+        }
+
+        function changeIp() {
+            ip_address = ipDiv.innerText;
+            alert("IP Address changed to" + ip_address);
+            ws.close();
+            connectWebSocket();
+        }
+
+        function sendMessage() {
+            const pValue = document.getElementById('pValue').value;
+            const iValue = document.getElementById('iValue').value;
+            const dValue = document.getElementById('dValue').value;
+
+            const p_value_text = document.getElementById('p_value_text');
+            const i_value_text = document.getElementById('i_value_text');
+            const d_value_text = document.getElementById('d_value_text');
+            p_value_text.innerText = pValue;
+            i_value_text.innerText = iValue;
+            d_value_text.innerText = dValue;
+            let mode = 1;
+            if (ws.readyState === WebSocket.OPEN) {
+
+                const message = pValue + "," + iValue + "," + dValue + "," + mode;
+                ws.send(message);
+                console.log("i sent mesage");
+            } else {
+                console.error("WebSocket connection is not open.");
+                if (prev_status) {
+                    conn_status_div.innerText = "disconnected";
+                } else {
+                    conn_status_div.innerText = "Not Connected";
+                }
+            }
+        }
+
+        // Connect WebSocket when the page loads
+        window.onload = function () {
+            connectWebSocket();
+        };
+    </script>
+</body>
+
+</html>

@@ -1,34 +1,22 @@
-// #define ENA D0
-// #define IN_1 D1
-// #define IN_2 D2
-// #define IN_3 D3
-// #define IN_4 D4
-// #define ENB D5
+// for nodemcu
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
 
-// // for nodemcu
-// #include <ESP8266WiFi.h>
-// #include <WiFiClient.h>
-// #include <ESP8266WebServer.h>
+#define ENA 16
+#define IN_1 0
+#define IN_2 2
+#define IN_3 14
+#define IN_4 12
+#define ENB 13
 
-
-// #define ENA 13
-// #define IN_1 12
-// #define IN_2 14
-// #define IN_3 27
-// #define IN_4 26
-// #define ENB 25
-
-// // for esp32
-// #include <WiFi.h>
-// #include <WiFiClient.h>
-// #include <WebServer.h>
 
 String command;
 int speedCar = 800;
 int speed_Coeff = 3;
 
-const char* ssid = "soccernoob";
-WebServer server(80);
+const char* ssid = "SeBaRo";
+ESP8266WebServer server(80);
 
 void setup() {
 
@@ -39,7 +27,7 @@ void setup() {
   pinMode(IN_3, OUTPUT);
   pinMode(IN_4, OUTPUT);
 
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // Connecting WiFi
 
