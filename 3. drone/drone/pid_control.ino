@@ -34,14 +34,13 @@ void calculateErrors() {
   Serial.print("\t");
   Serial.print(errors[ROLL]);
   Serial.println("\t");
-
-  // disp_measures();
 }
 
 void pidController() {
   float yaw_pid = 0;
   float pitch_pid = 0;
   float roll_pid = 0;
+  // float height_pid = 0;
 
   // Take no action if there is no throttle to the motors
   // if (instruction[THROTTLE] > 0) {
@@ -64,15 +63,10 @@ void pidController() {
     previous_error[ROLL] = errors[ROLL];
 
     // PID = e.Kp + ∫e.Ki + Δe.Kd
-    // yaw_pid = (errors[YAW] * Kp[YAW]) + (error_sum[YAW] * Ki[YAW]) + (delta_err[YAW] * Kd[YAW]);
-    yaw_pid = 0;
+    // yaw_pid = 0; // because we dont have a precise yaw measurement
+    yaw_pid = (errors[YAW] * Kp[YAW]) + (error_sum[YAW] * Ki[YAW]) + (delta_err[YAW] * Kd[YAW]);
     pitch_pid = (errors[PITCH] * Kp[PITCH]) + (error_sum[PITCH] * Ki[PITCH]) + (delta_err[PITCH] * Kd[PITCH]);
     roll_pid = (errors[ROLL] * Kp[ROLL]) + (error_sum[ROLL] * Ki[ROLL]) + (delta_err[ROLL] * Kd[ROLL]);
-
-    // Serial.print(pitch_pid);
-    // Serial.print("\t");
-    // Serial.print(roll_pid);
-    // Serial.print("\t");
 
     // Cauculate new target throttle for each motor
     motor_lf_throttle = instruction[THROTTLE] - roll_pid + pitch_pid + yaw_pid;

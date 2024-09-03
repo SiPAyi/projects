@@ -2,122 +2,172 @@
 // // then use get_radio_values() function to get the radio values
 
 #include <SPI.h>
+#include <nRF24L01.h>
 #include <RF24.h>
 
-RF24 radio(7, 8);  // CE, CSN pins (customize these for your setup)
+RF24 radio(7, 8); // CE, CSN pins (customize these for your setup)
 const byte address[6] = "00001";
 
-void ResetData() {
-  data.switch1 = 0;
-  data.switch2 = 0;
-  data.throttle = 0;  // Motor Stop (254/2=127)(Signal lost position)
-  data.pitch = 0;     // Center (Signal lost position)
-  data.roll = 0;      // Center(Signal lost position)
-  data.yaw = 0;       // Center (Signal lost position )
-  data.pid = 0;
+// timestamps
+unsigned long last_ideal_mode_time = 0;
+unsigned long last_alt_hold_mode_time = 0;
+unsigned long last_nrf_connected_time = 0;
+unsigned long last_ping_time = 0;
+
+// for radio communication, controller data-type
+struct Orientation
+{
+  float roll;
+  float pitch;
+  float yaw;
+  float throttle;
+  float battery_level;
+};
+Orientation orientation_data;
+
+struct rpyt_command
+{
+  float roll;
+  float pitch;
+  float yaw;
+  float throttle;
+} rpyt_command rpyt_command_data;
+
+void ResetData()
+{
+  orientation_data.roll = 0;
+  orientation_data.pitch = 0;
+  orientation_data.yaw = 0;
+  orientation_data.throttle = 0;
+  orientation_data.battery_level = 0;
+  rpyt_command_data.roll = 0;
+  rpyt_command_data.pitch = 0;
+  rpyt_command_data.yaw = 0;
+  rpyt_command_data.throttle = 0;
 }
 
-void receiver_setup() {
+void receiver_setup()
+{
   ResetData();
 
-  Serial.println("searching for radio signals");
-  while (!radio.begin()) {
+  Serial.println("Connecting to nrf module...");
+  while (!radio.begin())
+  {
     Serial.println(F("radio hardware is not responding!!"));
-    blink_eyes();
-    radio_status_count++;
-    led_status = ((int)radio_status_count / 125) % 2;
-    digitalWrite(green1, led_status);
-    digitalWrite(green2, led_status);
+    blinkLED(green1, 500, last_nrf_connected_time);
+    last_nrf_connected_time = millis();
   }
-  radio_status_count = 0;
-  Serial.println("got the radio signal");
-  // radio.openWritingPipe(address);
+
+  Serial.println("Found the nrf module");
   radio.openReadingPipe(1, address);
+  radio.setPALevel(RF24_PA_LOW);
+  radio.setDataRate(RF24_1MBPS);
+  radio.setRetries(3, 5); // Retry delay: 1500us, Retry count: 15
+  radio.enableDynamicPayloads();
+  radio.enableAckPayload();
   radio.startListening();
-  open_eyes();
-  delay(1000);
-  Serial.println("radio connected");
 }
 
-void receive_data() {
-  if (radio.available()) {
-    radio_status_count = 0;
-    radio.read(&data, sizeof(Signal));
+int wait_for_ping()
+{
+  if (radio.available())
+  {
+    radio.read(&dataReceived, sizeof(dataReceived));
+    Serial.print("Received data: ");
+    Serial.println(dataReceived);
+    Serial.println("going to state S2");
+    led_output(1, 0, 1);
+    return idealMode;
+  }
+  else
+  {
+    Serial.println("waiting for transmitter ping message");
+    blinkLED(green2, 500, last_ping_time);
+    last_ping_time = millis();
+    return setupMode;
+  }
+}
 
-    // instruction[THROTTLE] = 60 + map(data.pid, 0, 255, 0, 120);
-    // instruction[YAW] = (data.yaw - 125) / 10;
-    // instruction[PITCH] = (data.pitch-125)/10;
-    // instruction[ROLL] = (data.roll-125)/10;
+int idealModeReceiver()
+{
+  int ideal_mode_command;
+  unsigned long current_millis = millis();
+  if (radio.available())
+  {
+    last_ideal_mode_time = millis();
+    radio.read(&ideal_mode_command, sizeof(ideal_mode_command));
+    Serial.print("Received data: ");
+    Serial.println(ideal_mode_command);
 
-    // below block is used when tuning
-    // instruction[PITCH] = 0;
-    // instruction[ROLL] = 0;
-    // Kp[YAW] = (float)data.pid * 12 / 10;
+    // filling the values to transmit
+    orientation_data.roll = measures[ROLL];
+    orientation_data.pitch = measures[PITCH];
+    orientation_data.yaw = measures[YAW];
+    orientation_data.throttle = measures[THROTTLE];
+    orientation_data.battery_level = battery_level;
 
-    // disp_measures(); // for display info on lcd
+    radio.writeAckPayload(1, &orientation_data, sizeof(orientation_data));
 
-    Serial.print("*");  // * it shows that radio is connected in the serial monitor
-    open_eyes();
-  } else {
-    radio_status_count++;
-    if (radio_status_count >= 1250) {  // if radio is disconnected for 5(5*250 = 1250 times) seconds
-      stopMotors();
-      led_status = ((int)(radio_status_count + 1250) / 125) % 2;  // change the output every 500(125*4) milliseconds
-      digitalWrite(green1, led_status);
-      digitalWrite(green2, led_status);
-      Serial.println("loose the connection since 5 seconds");
-    } else {
-      // close_eyes();
-      // Serial.println("im not getting the signal");
+    if (ideal_mode_command == 1 || ideal_mode_command == 2)
+    {
+      return idealMode;
+    }
+    else if (ideal_mode_command == 3)
+    {
+      return altitudeHoldMode;
+    }
+    else if (ideal_mode_command == 4)
+    {
+      return sensorCalibMode;
+    }
+    else if (ideal_mode_command == 5)
+    {
+      return PIDTunerMode;
     }
   }
+  else if ((current_millis - last_ideal_mode_time) < 1000) // 1000 is 1sec before connection lost
+  {
+    return idealMode;
+  }
+  else // 1sec after connection lost
+  {
+    return setupMode;
+  }
 }
 
-// void transmit_data() {
-//   data.yaw = measures[YAW];
-//   data.pitch = measures[PITCH];
-//   data.roll = measures[ROLL];
-//   data.throttle = instruction[THROTTLE];  // replace this with altitude when dealing with barometer
+void altitudeHoldModeTransmitter()
+{
+  unsigned long current_millis = millis();
+  if (radio.available())
+  {
+    last_alt_hold_mode_time = millis();
+    radio.read(&rpyt_command_data, sizeof(rpyt_command_data));
+    instruction[ROLL] = rpyt_command_data.roll;
+    instruction[PITCH] = rpyt_command_data.pitch;
+    instruction[YAW] = rpyt_command_data.yaw;
+    instruction[THROTTLE] = rpyt_command_data.throttle;
+    Serial.print("Received rpyt command values");
 
-//   radio.write(&data, sizeof(Signal));
+    // filling the values to transmit
+    orientation_data.roll = measures[ROLL];
+    orientation_data.pitch = measures[PITCH];
+    orientation_data.yaw = measures[YAW];
+    orientation_data.throttle = measures[THROTTLE];
+    orientation_data.battery_level = battery_level;
 
-//   disp_measures();
-// }
-
-void flight_start_test() {
-  // it will put the drone into control mode by moving the left joystick to bottom right corner
-  while (true) {
-    receive_data();
-    if (instruction[THROTTLE] == -12 && instruction[YAW] == 13) {
-      break;
-    }
-    Serial.print("waiting for ");
-    Serial.print("instruction[THROTTLE] == 0 && instruction[YAW] == 255\t");
-    Serial.print(data.throttle);
-    Serial.print("\t");
-    Serial.print(data.yaw);
-    Serial.print("\t");
-    Serial.print(instruction[THROTTLE] == 0);
-    Serial.print("\t");
-    Serial.println(instruction[YAW] == 255);
+    radio.writeAckPayload(1, &orientation_data, sizeof(orientation_data));
+    return altitudeHoldMode;
   }
-  Serial.print("okay i got the instruction to start the props");
-  Serial.print("I will start propellers in ");
-  for (int i = 1; i < 4; i++) {
-    lcd.print(3 - i);
-    lcd.print(" ");
-    Serial.print(3 - i);
-    Serial.print("\t");
-    digitalWrite(red, 3 % 2);
-    delay(1000);
+  else if ((current_millis - last_alt_hold_mode_time) < 1000) // 1000 is 1sec before connection lost
+  {
+    return altitudeHoldMode;
   }
-  digitalWrite(red, LOW);
+  else // 1sec after connection lost
+  {
+    return setupMode;
+  }
 }
 
-void start_menu() {
-  // i want to create a menu so the i can put my drone into any mode.
-  // 1. gyro calibration mode
-  // 2. esc calibration mode
-  // 3. control mode
-  // 4. stable flight mode
+void sensorCalibModeReceiver()
+{
 }

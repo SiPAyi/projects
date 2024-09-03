@@ -1,0 +1,127 @@
+#include <Bounce2.h>
+
+const int button1Pin = 2;       // Pin connected to button 1
+const int button2Pin = 3;       // Pin connected to button 2
+const int doubleTapDelay = 250; // Maximum delay between taps for a double tap
+
+Bounce button1Debouncer = Bounce(); // Instantiate a Bounce object for button 1
+Bounce button2Debouncer = Bounce(); // Instantiate a Bounce object for button 2
+
+unsigned long lastTapTime1 = 0; // Time of the last tap for button 1
+unsigned long lastTapTime2 = 0; // Time of the last tap for button 2
+
+bool singleTapDetected1 = false; // Flag for single tap on button 1
+bool doubleTapDetected1 = false; // Flag for double tap on button 1
+bool singleTapDetected2 = false; // Flag for single tap on button 2
+bool doubleTapDetected2 = false; // Flag for double tap on button 2
+
+void btnSetup()
+{
+  pinMode(button1Pin, INPUT_PULLUP); // Set the button 1 pin as input with internal pull-up resistor
+  pinMode(button2Pin, INPUT_PULLUP); // Set the button 2 pin as input with internal pull-up resistor
+  Serial.begin(9600);                // Initialize serial communication for debugging
+
+  button1Debouncer.attach(button1Pin); // Attach the button 1 pin to the debouncer
+  button1Debouncer.interval(50);       // Set debounce interval to 50 milliseconds
+
+  button2Debouncer.attach(button2Pin); // Attach the button 2 pin to the debouncer
+  button2Debouncer.interval(50);       // Set debounce interval to 50 milliseconds
+}
+
+void btnHandle()
+{
+  // return value : condition
+  // 0: nothing pressed
+  // 1: left button single press
+  // 2: left button double press
+  // 3: right button single press
+  // 4: right button double press
+  button1Debouncer.update(); // Update the debouncer for button 1
+  button2Debouncer.update(); // Update the debouncer for button 2
+
+  // Handle button 1
+  if (button1Debouncer.fell())
+  { // If button 1 was just pressed
+    unsigned long currentTime = millis();
+
+    if ((currentTime - lastTapTime1) < doubleTapDelay)
+    {
+      doubleTapDetected1 = true;
+      singleTapDetected1 = false; // Clear single tap flag on double tap
+      lastTapTime1 = 0;           // Reset tap time
+    }
+    else
+    {
+      singleTapDetected1 = true;
+      doubleTapDetected1 = false; // Clear double tap flag on single tap
+      lastTapTime1 = currentTime; // Record the time of this tap
+    }
+  }
+
+  // Handle button 2
+  if (button2Debouncer.fell())
+  { // If button 2 was just pressed
+    unsigned long currentTime = millis();
+
+    if ((currentTime - lastTapTime2) < doubleTapDelay)
+    {
+      doubleTapDetected2 = true;
+      singleTapDetected2 = false; // Clear single tap flag on double tap
+      lastTapTime2 = 0;           // Reset tap time
+    }
+    else
+    {
+      singleTapDetected2 = true;
+      doubleTapDetected2 = false; // Clear double tap flag on single tap
+      lastTapTime2 = currentTime; // Record the time of this tap
+    }
+  }
+
+  // Check for single tap on button 1
+  if (singleTapDetected1 && (millis() - lastTapTime1) > doubleTapDelay)
+  {
+    Serial.println("Single Tap on Button 1: Option 1");
+    singleTapDetected1 = false; // Clear the single tap flag
+    return 1
+  }
+
+  // Check for double tap on button 1
+  if (doubleTapDetected1)
+  {
+    Serial.println("Double Tap on Button 1: Option 2");
+    doubleTapDetected1 = false; // Clear the double tap flag
+    return 2
+  }
+
+  // Check for single tap on button 2
+  if (singleTapDetected2 && (millis() - lastTapTime2) > doubleTapDelay)
+  {
+    Serial.println("Single Tap on Button 2: Option 3");
+    singleTapDetected2 = false; // Clear the single tap flag
+    return 3
+  }
+
+  // Check for double tap on button 2
+  if (doubleTapDetected2)
+  {
+    Serial.println("Double Tap on Button 2: Option 4");
+    doubleTapDetected2 = false; // Clear the double tap flag
+    return 4
+  }
+  // if the loop still come here then return 0 means no change
+
+}
+
+int findNextState()
+{
+  // here we have to give the
+  // if buttons are not selected then return idealMode
+  int option = btnHandle();
+  if(option == 0){
+    return idealMode;
+  }
+}
+
+int sensorCalibOptionSelect()
+{
+}
