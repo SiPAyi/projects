@@ -40,14 +40,16 @@ void receive_data() {
     radio_status_count = 0;
     radio.read(&data, sizeof(Signal));
     analogWrite(A4, 0);
-  } else {
-    radio_status_count++;
-    if (radio_status_count >= 1250) {                         // if radio is disconnected for 5(5*250 = 1250 times) seconds
-      led_status = ((int)(radio_status_count + 1250)) % 255;  // change the output every 500(125*4) milliseconds
-      analogWrite(A4, led_status);
-      Serial.println("loose the connection since 5 seconds");
-    } else {
-      Serial.println("im not getting the signal");
-    }
-  }
+    motor_control();
+  } 
+  // else {
+  //   radio_status_count++;
+  //   if (radio_status_count >= 1250) {                         // if radio is disconnected for 5(5*250 = 1250 times) seconds
+  //     led_status = ((int)(radio_status_count + 1250)) % 255;  // change the output every 500(125*4) milliseconds
+  //     analogWrite(A4, led_status);
+  //     Serial.println("loose the connection since 5 seconds");
+  //   } else {
+  //     // Serial.println("im not getting the signal");
+  //   }
+  // }
 }

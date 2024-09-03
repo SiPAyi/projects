@@ -1,37 +1,20 @@
-#include <SPI.h>
-#include <RF24.h>
-
-RF24 radio(9, 10);  // CE, CSN pins
-const byte address[6] = "00001";
-
-struct Signal {
-  bool switch1;
-  bool switch2;
-  byte throttle;
-  byte pitch;
-  byte roll;
-  byte yaw;
-  byte pid;
-};
-Signal data;
+// 0:started, 1:setupMode, 2:idealMode, 3:altitudeHold,  4:sensorCalibMode, 5:PIDTuneMode, 6:RescueMode
+int transmitter_status = 0;
+#define setupMode 1
+#define idealMode 2
+#define altitudeHoldMode 3
+#define sensorCalibMode 4
+#define PIDTunerMode 5
+#define RescueMode 6
 
 // lx(roll)-a3 ly(pitch)-a4 rx(yaw)-a2 ry(throttle)-a1 voltage_divider-A5  swl-7, swr-8
 int throttle_pin = A1;
 int yaw_pin = A2;
-int pitch_pin = A0;
+int pitch_pin = A4;
 int roll_pin = A3;
-int pid_pin = A4;
+int pot_pin = A5;
 int switch1 = 7;
 int switch2 = 8;
-
-void ResetData() {
-  data.switch1 = 0;
-  data.switch2 = 0;
-  data.throttle = 0;
-  data.pitch = 0;
-  data.roll = 0;
-  data.yaw = 0;
-}
 
 int status_led = 6;
 int status = 0;
@@ -40,48 +23,57 @@ int status = 0;
 int time_step = 4;
 double prev_time = millis();
 
-void setup() {
+void setup()
+{
+  transmitter_status = setupMode;
+  Serial.begin(9600);
+  Serial.println("started the transmitter");
 
-  // display_setup();
+  display_setup();
 
-  ResetData();
-
+  // for input and output
   pinMode(A5, INPUT);
   pinMode(A4, INPUT);
   pinMode(A3, INPUT);
   pinMode(A2, INPUT);
-  pinMode(7, INPUT);
-  pinMode(8, INPUT);
+  pinMode(A1, INPUT);
+  pinMode(A0, INPUT);
+  pinMode(status_led, OUTPUT); // led output
 
-  pinMode(6, OUTPUT);
-
-  Serial.begin(9600);
-
-  // // initialize the transceiver on the SPI bus
-  // if (!radio.begin()) {
-  //   Serial.println(F("radio hardware is not responding!!"));
-  //   // disp_radio_check(0);
-  //   while (1) {}  // hold in infinite loop
-  // }
-  // radio.openWritingPipe(address);
-  // radio.setPALevel(RF24_PA_LOW);
-  // disp_radio_check(1);
-  // Serial.println("radio connected");
-
-  // radio.stopListening();  // put radio in TX mode
-
-  digitalWrite(status_led, 1);
-  delay(200);
-  digitalWrite(status_led, 0);
-  delay(200);
-  digitalWrite(status_led, 1);
-  delay(200);
-  digitalWrite(status_led, 0);
-  delay(200);
+  transmitter_setup();
 }
 
-void loop() {
-  Serial.println(String() + "throttle: " + analogRead(throttle_pin) + "\tyaw: " + analogRead(yaw_pin) + "\troll: " + analogRead(roll_pin) + "\tpitch: " + analogRead(pitch_pin));
-  // transmit_data();
-  // receive_data();
+void loop()
+{
+  if (millis() - prev_time >= time_step)
+  {
+    prev_time = millis();
+    switch (drone_status)
+    {
+    case setupMode:
+      transmitter_status = ping_drone();
+      break;
+    case idealMode:
+      int next_state = findNextState();
+      transmitter_status = idealModeTransmitter(next_state);
+      break;
+    case altitudeHoldMode:
+      transmitter_status = altitudeHoldModeTransmitter();
+      break;
+
+    case sensorCalibMode:
+      // listen to the button inputs to select the mode they want
+      sensor_calib_option_select();
+      sensorCalibModeTransmitter();
+      break;
+
+    case PIDTunerMode:
+      //
+      break;
+
+    case RescueMode:
+      //
+      break;
+    }
+  }
 }

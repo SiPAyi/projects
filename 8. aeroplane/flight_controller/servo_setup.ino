@@ -18,7 +18,7 @@ void motor_setup() {
   pitch_servo.attach(9);
   yaw_servo.attach(10);
 
-  esc.writeMicroseconds(1050);
+  esc.writeMicroseconds(1000);
   roll_servo_left.write(max_roll);
   roll_servo_right.write(max_roll);
   pitch_servo.write(max_pitch);
@@ -37,10 +37,13 @@ void motor_setup() {
 void motor_control() {
   int roll_left = minmax((max_roll - (data.roll - 124)), 0, 2 * max_roll);
   int roll_right = minmax((max_roll + (data.roll - 124)), 0, 2 * max_roll);
-  int pitch = minmax((max_pitch + (data.pitch - 128)), 0, 2 * max_pitch);
-  int yaw = minmax((max_yaw + (data.yaw - 129)), 0, 2*max_yaw);
+  int pitch = minmax((max_pitch + (data.pitch - 130)/3 + (data.yaw - 130)/3), 0, 2 * max_pitch);
+  int yaw = minmax((max_yaw + (data.pitch - 130)/3 - (data.yaw - 130)/3), 0, 2*max_yaw);
   data.throttle -= 130;
-  int throttle = map(data.throttle, 0, 128, 0, 180);
+  if (data.throttle<=0){
+    data.throttle=0;
+  }
+  int throttle = map(data.throttle, 0, 130, 45, 180);
 
   esc.write(throttle);
   roll_servo_left.write(roll_left);

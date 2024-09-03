@@ -12,20 +12,18 @@ int led = A4;
 int radio_status_count = 0, led_status = 0;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Fligh Started");
 
   motor_setup();
   receiver_setup();
-  // delay(3000);
+  // delay(30000);
 }
 
 void loop() {
   // servo_test();
   receive_data();
-  if (radio_status_count < 500) {
-    motor_control();
-  }else{
+  if (radio_status_count > 500) {
     stop_motors();
   }
 }
